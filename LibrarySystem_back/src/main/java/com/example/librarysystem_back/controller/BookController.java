@@ -1,34 +1,61 @@
 package com.example.librarysystem_back.controller;
 
-import com.example.librarysystem_back.service.BrrowService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.librarysystem_back.entity.Book;
-import com.example.librarysystem_back.mapper.BookMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.librarysystem_back.service.BookService;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/books")
-@CrossOrigin(origins = "*") // 允许前端跨域
 public class BookController {
 
-    @Autowired private BookMapper bookMapper;
-    @Autowired private BrrowService borrowService;
+    private final BookService bookService;
 
-    // 获取列表
-    @GetMapping
-    public List<Book> getList() {
-        return bookMapper.selectList(null);
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
     }
 
-    // 借阅接口
-    @PostMapping("/{bookId}/borrow")
-    public String borrow(@PathVariable Long bookId, @RequestParam Long userId) {
-        try {
-            borrowService.borrowBook(userId, bookId);
-            return "借阅成功";
-        } catch (RuntimeException e) {
-            return e.getMessage(); // 返回"库存不足"
-        }
+    // 分页查询图书
+    @GetMapping
+    public IPage<Book> getBooks(@RequestParam(defaultValue = "1") int page,
+                                @RequestParam(defaultValue = "10") int size) {
+        return bookService.page(new Page<>(page, size));
+    }
+
+    // 根据ID查询图书
+    @GetMapping("/{id}")
+    public Book getBookById(@PathVariable Long id) {
+        return bookService.getById(id);
+    }
+
+    // 新增图书
+    @PostMapping
+    public Map<String, Object> addBook(@RequestBody Book book) {
+        Map<String, Object> result = new HashMap<>();
+        boolean success = bookService.addBook(book);
+        result.put("success", success);
+        return result;
+    }
+
+    // 更新图书
+    @PutMapping
+    public Map<String, Object> updateBook(@RequestBody Book book) {
+        Map<String, Object> result = new HashMap<>();
+        boolean success = bookService.updateBook(book);
+        result.put("success", success);
+        return result;
+    }
+
+    // 删除图书
+    @DeleteMapping("/{id}")
+    public Map<String, Object> deleteBook(@PathVariable Long id) {
+        Map<String, Object> result = new HashMap<>();
+        boolean success = bookService.deleteBook(id);
+        result.put("success", success);
+        return result;
     }
 }

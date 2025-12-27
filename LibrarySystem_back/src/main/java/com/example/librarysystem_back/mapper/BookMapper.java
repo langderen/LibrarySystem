@@ -7,7 +7,11 @@ import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface BookMapper extends BaseMapper<Book> {
-    // 核心 SQL：只有当库存 > 0 时才减 1，返回受影响行数
+    // 借阅时减少库存（仅当库存>0）
     @Update("UPDATE books SET available_stock = available_stock - 1 WHERE id = #{id} AND available_stock > 0")
     int decreaseStock(Long id);
+
+    // 归还时增加库存
+    @Update("UPDATE books SET available_stock = available_stock + 1 WHERE id = #{id}")
+    int increaseStock(Long id);
 }

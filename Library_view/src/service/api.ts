@@ -17,7 +17,7 @@ api.interceptors.request.use(
     // 从 localStorage 获取 token 并添加到请求头
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['satoken'] = token; 
     }
     return config;
   },
@@ -32,11 +32,11 @@ api.interceptors.response.use(
   response => {
     // 假设后端返回的数据结构为 { code: 200, message: 'success', data: ... }
     const res = response.data;
-    if (res.code !== 200) {
+    if (response.status !== 200) {
       ElMessage.error(res.message || '请求失败');
       return Promise.reject(new Error(res.message || 'Error'));
     } else {
-      return res.data; // 只返回成功的数据部分
+      return res; // 只返回成功的数据部分
     }
   },
   error => {
@@ -60,25 +60,41 @@ const apiService = {
   login(username: any, password: any) {
     return api.post('/users/login', { username, password });
   },
-  register(userData: any) {
-    return api.post('/auth/register', userData);
+  register(user: any) {
+    return api.post('/users/register', user);
   },
   getProfile() {
-    return api.get('/users/profile');
+    return api.get(`/users/profile`);
   },
 
   // --- 图书相关 ---
-  getBooks() {
-    return api.get('/books?page=1&size=10');
+  getBooks(page:any,size:any, keyword?:string) {
+    let url = `/books?page=${page}&size=${size}`;
+    if (keyword) {
+      url += `&keyword=${encodeURIComponent(keyword)}`;
+    }
+    return api.get(url);
   },
-  borrowBook(bookId: any) {
-    return api.post(`/books/${bookId}/borrow`);
+  borrowBook(userId: any, bookId: any) {
+    return api.post(`/borrows?userId=${userId}&bookId=${bookId} `);
   },
-  returnBook(bookId: any) {
-    return api.post(`/books/${bookId}/return`);
+  returnBook(recordId: any) {
+    return api.put(`/borrows/return?recordId=${recordId}`);
   },
-  getBorrowedBooks() {
-    return api.get('/users/borrowed-books');
+  getBorrowedBooks(userId: any) {
+    return api.get(`/borrows/getBrrowByUserId?userId=${userId}`);
+  },
+
+
+  // --- 新增：管理员图书管理接口 ---
+  addBook(bookData: any) {
+    return api.post('/books', bookData);
+  },
+  updateBook(bookData: any) {
+    return api.put('/books', bookData);
+  },
+  deleteBook(bookId: any) {
+    return api.delete(`/books/${bookId}`);
   }
 };
 

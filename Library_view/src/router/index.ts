@@ -23,6 +23,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../pages/ProfileView.vue') // 懒加载
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../pages/RegisterView.vue') // 懒加载
     }
   ]
 });

@@ -1,5 +1,6 @@
 package com.example.librarysystem_back.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.librarysystem_back.entity.Book;
@@ -20,16 +21,31 @@ public class BookController {
     }
 
     // 分页查询图书
-    @GetMapping
-    public IPage<Book> getBooks(@RequestParam(defaultValue = "1") int page,
-                                @RequestParam(defaultValue = "10") int size) {
-        return bookService.page(new Page<>(page, size));
-    }
 
-    // 根据ID查询图书
-    @GetMapping("/{id}")
-    public Book getBookById(@PathVariable Long id) {
-        return bookService.getById(id);
+    @GetMapping
+    public IPage<Book> getBooks(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            // 新增：搜索关键词，非必传（required = false）
+            @RequestParam(required = false) String keyword) {
+
+        // 1. 构建分页对象
+        Page<Book> pageObj = new Page<>(page, size);
+
+        // 2. 构建模糊查询条件
+        LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
+        // 如果关键词不为空/空串，添加多字段模糊匹配
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper
+                    .like(Book::getTitle, keyword.trim())    // 书名模糊匹配
+                    .or()
+                    .like(Book::getAuthor, keyword.trim())   // 作者模糊匹配
+                    .or()
+                    .like(Book::getIsbn, keyword.trim());    // ISBN 模糊匹配
+        }
+
+        // 3. 分页 + 条件查询
+        return bookService.page(pageObj, queryWrapper);
     }
 
     // 新增图书

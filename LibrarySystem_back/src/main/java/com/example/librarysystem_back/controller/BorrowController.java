@@ -29,8 +29,8 @@ public class BorrowController {
     }
 
     // 归还图书
-    @PutMapping("/return/{recordId}")
-    public Map<String, Object> returnBook(@PathVariable Long recordId) {
+    @PutMapping("/return")
+    public Map<String, Object> returnBook(@RequestParam Long recordId) {
         Map<String, Object> result = new HashMap<>();
         boolean success = borrowService.returnBook(recordId);
         result.put("success", success);
@@ -38,8 +38,8 @@ public class BorrowController {
     }
 
     // 查询用户借阅记录
-    @GetMapping("/user/{userId}")
-    public List<BorrowRecord> getUserBorrows(@PathVariable Long userId) {
+    @GetMapping("/getBrrowByUserId")
+    public List<BorrowRecord> getUserBorrows(@RequestParam Long userId) {
         return borrowService.getUserBorrowRecords(userId);
     }
 }

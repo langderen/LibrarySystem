@@ -4,15 +4,15 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 // 1. 定义状态接口
 export interface UserState {
   userId: string
-  userName: string
+  username: string
   userEmail: string
-  AvatarUrl: string
   isFinited: boolean
   token: string
+  role: string 
 }
 
 // 2. 使用对象式 state（而非函数），并显式标注类型
-export const userStore = defineStore('user', {
+export const useUserStore = defineStore('user', {
   // ✅ 启用持久化（v3 写法）
   persist: true, // 最简：整个 state 持久化到 localStorage
 
@@ -20,16 +20,19 @@ export const userStore = defineStore('user', {
   // ✅ 使用对象字面量 + 断言，确保类型推导
   state: (): UserState => ({
     userId: '',
-    userName: '',
+    username: '',
     userEmail: '',
-    AvatarUrl: '',
     isFinited: false,
-    token: ''
+    token: '',
+    role: ''
   }),
 
   getters: {
     getUserName(state): string {
-      return state.userName || state.userId.toUpperCase()
+      return state.username || state.userId.toUpperCase()
+    },
+    isAdmin(state): boolean {
+      return state.role === 'admin'; 
     }
   },
 
@@ -40,7 +43,11 @@ export const userStore = defineStore('user', {
       }
     },
     setUser(data: Partial<UserState>) {
-      Object.assign(this, data)
+      this.userId = data.userId || this.userId
+      this.username = data.username || this.username
+      this.userEmail = data.userEmail || this.userEmail
+      this.token = data.token || this.token
+      this.role = data.role || this.role
       this.isFinited = true
     },
     clearUser() {

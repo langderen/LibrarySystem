@@ -1,5 +1,6 @@
 package com.example.librarysystem_back.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.librarysystem_back.entity.BorrowRecord;
 import com.example.librarysystem_back.mapper.BookMapper;
@@ -54,6 +55,7 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowRecordMapper, BorrowRec
 
     @Override
     public List<BorrowRecord> getUserBorrowRecords(Long userId) {
+
         return baseMapper.selectByUserId(userId);
     }
 }

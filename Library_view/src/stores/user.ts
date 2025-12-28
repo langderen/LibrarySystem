@@ -8,7 +8,10 @@ export interface UserState {
   userEmail: string
   AvatarUrl: string
   isFinited: boolean
+<<<<<<< HEAD
   token: string
+=======
+>>>>>>> fb8621dc81e769fd5d8a486352ce2f7498e03556
 }
 
 // 2. 使用对象式 state（而非函数），并显式标注类型
@@ -23,8 +26,12 @@ export const userStore = defineStore('user', {
     userName: '',
     userEmail: '',
     AvatarUrl: '',
+<<<<<<< HEAD
     isFinited: false,
     token: ''
+=======
+    isFinited: false
+>>>>>>> fb8621dc81e769fd5d8a486352ce2f7498e03556
   }),
 
   getters: {

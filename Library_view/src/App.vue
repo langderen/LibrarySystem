@@ -18,6 +18,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios' // 
+import { userStore } from './stores/user'
+
 
 const books = ref([])
 const loading = ref(false)
@@ -28,8 +30,8 @@ const API_URL = 'http://localhost:8080/api/books'
 const fetchBooks = async () => {
   loading.value = true
   try {
-    const res = await axios.get(API_URL)
-    books.value = res.data
+    const res = await axios.get(API_URL+'?page=1&size=10')
+    books.value = res.data.records
   } catch (err) {
     alert('连接后端失败')
   } finally {
@@ -41,7 +43,7 @@ const fetchBooks = async () => {
 const handleBorrow = async (bookId) => {
   try {
     // 模拟用户 ID = 1001
-    const res = await axios.post(`${API_URL}/${bookId}/borrow?userId=1001`)
+    const res = await axios.post(`/borrows?userId=${userStore.userId}&bookId=${bookId}`)
     if (res.data === '借阅成功') {
       alert('成功！')
       fetchBooks() // 借阅成功后刷新列表，更新库存显示

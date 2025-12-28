@@ -1,12 +1,35 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 import App from './App.vue'
-import router from './router'
+import VueCookies from 'vue3-cookies'
+import 'element-plus/dist/index.css'
+import { createRouter, createWebHistory } from 'vue-router'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
+
+//定义路由
+const routes = [
+  {path:"/",redirect:"/home"},
+]
+
+//创建路由
+const router = createRouter({
+  history:createWebHistory(),
+  routes
+})
+
+//加载路由
 const app = createApp(App)
 
-app.use(createPinia())
+//Pinia配置
+
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate);
+app.use(pinia)
 app.use(router)
+app.use(VueCookies)
+app.use(ElementPlus)
 
 app.mount('#app')

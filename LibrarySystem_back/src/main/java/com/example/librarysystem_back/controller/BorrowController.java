@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/borrows")
+@RequestMapping("/borrows")
 public class BorrowController {
 
     private final BorrowService borrowService;

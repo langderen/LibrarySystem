@@ -1,65 +1,90 @@
 <template>
-  <div style="padding: 20px;">
-    <h1>图书借阅系统</h1>
-    <div v-if="loading">加载中...</div>
-    
-    <div v-else class="book-list">
-      <div v-for="book in books" :key="book.id" class="card">
-        <h3>{{ book.title }}</h3>
-        <p>剩余库存: <span :style="{color: book.availableStock > 0 ? 'green' : 'red'}">{{ book.availableStock }}</span></p>
-        <button @click="handleBorrow(book.id)" :disabled="book.availableStock <= 0">
-          {{ book.availableStock > 0 ? '立即借阅' : '缺货' }}
-        </button>
+  <div id="app-container">
+    <!-- 顶部导航栏 -->
+    <el-header v-if="currentRoute.name !== 'login'" style="text-align: right; font-size: 12px">
+      <div style="float: left; font-size: 20px; font-weight: bold; color: #409EFF;">
+        图书管理系统
       </div>
-    </div>
+      <el-menu :default-active="currentRoute.path" class="el-menu-demo" mode="horizontal" :ellipsis="false">
+        <el-menu-item index="/" @click="goTo('/')">首页</el-menu-item>
+        <el-menu-item index="/books" @click="goTo('/books')">图书借阅</el-menu-item>
+          <!-- 登录或用户按钮 -->
+            <div v-if="useUserStore.isFinited">
+                <el-dropdown >
+                  <span class="el-dropdown-link" style="display:flex; align-items:center; gap:8px;">
+                    <el-avatar style="background-color: #4a6bff"> {{useUserStore.userId}} </el-avatar>
+                  </span>
+                    <el-dropdown-menu>
+                      <el-menu-item index="/profile" @click="goTo('/profile')">个人中心</el-menu-item>
+                      <el-menu-item index="logout" @click="logout">退出登录</el-menu-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+              </div>
+              <div v-else >
+                <el-menu-item index="/login" @click="goTo('/login')">登录</el-menu-item>
+              </div>
+      </el-menu>
+    </el-header>
+
+    <!-- 主内容区域 -->
+    <el-main>
+      <router-view />
+    </el-main>
+
+    <!-- 页脚 -->
+    <el-footer style="text-align: center">
+      <span>© 2025 图书管理系统 | Powered by Vue 3 & Element Plus</span>
+    </el-footer>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios' // 
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { ElMenuItem, ElMessage } from 'element-plus';
+import { userStore } from './stores/user';
 
-const books = ref([])
-const loading = ref(false)
-// 后端运行在 8080 端口
-const API_URL = 'http://localhost:8080/api/books'
+const router = useRouter();
+const route = useRoute();
+const currentRoute = computed(() => route);
+const useUserStore = userStore();
 
-// 获取图书列表
-const fetchBooks = async () => {
-  loading.value = true
-  try {
-    const res = await axios.get(API_URL)
-    books.value = res.data
-  } catch (err) {
-    alert('连接后端失败')
-  } finally {
-    loading.value = false
-  }
-}
+const goTo = (path) => {
+  router.push(path);
+};
 
-// 借阅操作
-const handleBorrow = async (bookId) => {
-  try {
-    // 模拟用户 ID = 1001
-    const res = await axios.post(`${API_URL}/${bookId}/borrow?userId=1001`)
-    if (res.data === '借阅成功') {
-      alert('成功！')
-      fetchBooks() // 借阅成功后刷新列表，更新库存显示
-    } else {
-      alert('失败：' + res.data)
-    }
-  } catch (err) {
-    alert('请求出错')
-  }
-}
+const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  isLoggedIn.value = false;
+  ElMessage.success('已成功退出登录');
+  router.push('/login');
+};
 
 onMounted(() => {
-  fetchBooks()
-})
+  isLoggedIn.value = localStorage.getItem('token') !== null;
+});
 </script>
 
-<style>
-.card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-button { background: #409EFF; color: white; border: none; padding: 5px 15px; cursor: pointer; }
-button:disabled { background: #ccc; cursor: not-allowed; }
+<style scoped>
+#app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.el-header, .el-footer {
+  background-color: #fff;
+  color: #333;
+  line-height: 60px;
+  border-bottom: 1px solid #ebeef5;
+}
+.el-main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f9fafc;
+}
+.el-menu-demo:not(.el-menu--collapse) {
+  border-bottom: none;
+}
 </style>

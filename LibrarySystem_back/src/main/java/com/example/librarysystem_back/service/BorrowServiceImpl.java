@@ -1,4 +1,4 @@
-package com.example.librarysystem_back.service.impl;
+package com.example.librarysystem_back.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.librarysystem_back.entity.BorrowRecord;

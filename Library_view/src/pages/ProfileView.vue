@@ -7,7 +7,7 @@
 
     <el-card shadow="never">
       <el-tabs v-model="activeTab">
-        
+
         <el-tab-pane label="我的借阅" name="borrows">
           <el-table :data="borrowedBooks" border style="width: 100%" v-loading="loadingBorrow">
             <el-table-column prop="id" label="ID" width="60" />
@@ -24,6 +24,42 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
+
+<el-tab-pane label="我的信息" name="info">
+    <el-card shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <span>用户基本信息</span>
+        </div>
+      </template>
+
+      <el-form :model="userStore" label-width="100px" style="width: 100%">
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户ID">
+              <el-input :value="userStore.userId || 'N/A'" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="用户名">
+              <el-input :value="userStore.username || 'N/A'" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱">
+              <el-input :value="userStore.userEmail || 'N/A'" disabled />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="手机号">
+              <el-input :value="userStore.userPhone || 'N/A'" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-card>
+  </el-tab-pane>
+
 
         <el-tab-pane label="图书管理" name="admin" v-if="userStore.isAdmin">
           <div class="admin-toolbar">
@@ -46,6 +82,8 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
+      
+      
       </el-tabs>
     </el-card>
 

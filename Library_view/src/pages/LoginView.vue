@@ -27,7 +27,6 @@
 </template>
 
 <script setup>
-// 原有 script 逻辑不变（略）
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';

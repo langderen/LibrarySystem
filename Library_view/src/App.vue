@@ -11,8 +11,7 @@
         <div v-if="userStore.isFinited" class="user-actions">
           <el-dropdown>
             <span class="el-dropdown-link">
-              <el-avatar size="small" :src=" undefined">{{ userStore.userName?.[0] || 'U' }}</el-avatar>
-              <span class="username">{{ userStore.userName || '用户' }}</span>
+              <el-avatar size="medial" >{{ userStore.username?.[0] || 'U' }}</el-avatar>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -56,13 +55,11 @@ const handleLogout = () => {
   router.push('/login');
 };
 onMounted(async () => {
-  // Pinia 的持久化插件会自动从 localStorage 恢复 token 到 userStore
-  // 我们检查如果 token 存在，说明用户之前登录过且未过期
-  if (userStore.token) {
+  if (localStorage.getItem('token')) {
     try {
       // 调用后端接口获取最新用户信息
       const userInfo = await apiService.getProfile();
-      console.log('自动刷新用户信息:', userInfo.data.profile);
+      console.log('自动刷新用户信息:', userInfo);
       userStore.setUser(userInfo.data.profile); 
     } catch (error) {
       console.error('自动刷新用户信息失败:', error);

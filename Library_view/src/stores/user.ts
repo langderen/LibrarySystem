@@ -7,6 +7,7 @@ export interface UserState {
   username: string
   userEmail: string
   isFinited: boolean
+  userPhone: string
   token: string
   role: string 
 }
@@ -24,6 +25,7 @@ export const useUserStore = defineStore('user', {
     userEmail: '',
     isFinited: false,
     token: '',
+    userPhone: '',
     role: ''
   }),
 
@@ -48,6 +50,7 @@ export const useUserStore = defineStore('user', {
       this.userEmail = data.userEmail || this.userEmail
       this.token = data.token || this.token
       this.role = data.role || this.role
+      this.userPhone = data.userPhone || this.userPhone
       this.isFinited = true
     },
     clearUser() {

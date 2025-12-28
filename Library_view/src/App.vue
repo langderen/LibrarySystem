@@ -39,24 +39,18 @@
 </template>
 
 <script setup>
-<<<<<<< HEAD
+
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMenuItem, ElMessage } from 'element-plus';
 import { userStore } from './stores/user';
-=======
-import { ref, onMounted } from 'vue'
-import axios from 'axios' // 
-import { userStore } from './stores/user'
-
->>>>>>> fb8621dc81e769fd5d8a486352ce2f7498e03556
 
 const router = useRouter();
 const route = useRoute();
 const currentRoute = computed(() => route);
 const useUserStore = userStore();
 
-<<<<<<< HEAD
+
 const goTo = (path) => {
   router.push(path);
 };
@@ -68,7 +62,7 @@ const logout = () => {
   ElMessage.success('已成功退出登录');
   router.push('/login');
 };
-=======
+
 // 获取图书列表
 const fetchBooks = async () => {
   loading.value = true
@@ -97,7 +91,6 @@ const handleBorrow = async (bookId) => {
     alert('请求出错')
   }
 }
->>>>>>> fb8621dc81e769fd5d8a486352ce2f7498e03556
 
 onMounted(() => {
   isLoggedIn.value = localStorage.getItem('token') !== null;

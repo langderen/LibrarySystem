@@ -197,9 +197,10 @@
               </template>
             </el-table-column>
             <el-table-column prop="registerDate" label="注册日期" width="120" align="center" />
-            <el-table-column label="操作" width="150" fixed="right" align="center">
+            <el-table-column label="操作" width="200" fixed="right" align="center">
               <template #default="scope">
                 <el-button type="primary" link size="small" @click="openUserDialog(scope.row)">编辑</el-button>
+                <el-button type="info" link size="small" @click="viewUserBorrows(scope.row)">查看借阅</el-button>
                 <el-button type="danger" link size="small" @click="handleDeleteUser(scope.row)" :disabled="scope.row.role === 'ADMIN'">删除</el-button>
               </template>
             </el-table-column>
@@ -275,6 +276,9 @@
       width="500px"
     >
       <el-form :model="userForm" label-width="100px" :rules="userRules" ref="userFormRef">
+        <el-form-item label="用户ID" prop="id">
+          <el-input v-model="userForm.id" placeholder="请输入用户ID" :disabled="isUserEditMode" />
+        </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="userForm.username" placeholder="请输入用户名" :disabled="isUserEditMode" />
         </el-form-item>
@@ -364,6 +368,33 @@
       <el-empty v-if="!loadingBookBorrowRecords && bookBorrowRecords.length === 0" description="暂无借阅记录" />
     </el-dialog>
 
+    <el-dialog
+      v-model="userBorrowDialogVisible"
+      :title="`${currentUserName} 的借阅记录`"
+      width="700px"
+    >
+      <el-table :data="userBorrowRecords" border stripe style="width: 100%" v-loading="loadingUserBorrowRecords">
+        <el-table-column prop="id" label="记录ID" width="80" align="center" />
+        <el-table-column prop="bookTitle" label="书名" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="isbn" label="ISBN" width="140" />
+        <el-table-column prop="bookAuthor" label="作者" min-width="100" />
+        <el-table-column prop="borrowTime" label="借阅日期" width="180" />
+        <el-table-column prop="returnTime" label="归还日期" width="180">
+          <template #default="scope">
+            {{ scope.row.returnTime ? scope.row.returnTime : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.status === 0 ? 'warning' : 'success'" size="small">
+              {{ scope.row.status === 0 ? '未归还' : '已归还' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-if="!loadingUserBorrowRecords && userBorrowRecords.length === 0" description="暂无借阅记录" />
+    </el-dialog>
+
   </div>
 </template>
 
@@ -386,6 +417,13 @@ const loadingBookBorrowRecords = ref(false);
 const currentBookTitle = ref('');
 const currentBookId = ref(null);
 
+// 用户借阅记录查看相关
+const userBorrowDialogVisible = ref(false);
+const userBorrowRecords = ref([]);
+const loadingUserBorrowRecords = ref(false);
+const currentUserName = ref('');
+const currentUserId = ref(null);
+
 const viewBorrowRecords = async (row) => {
   currentBookTitle.value = row.title;
   currentBookId.value = row.id;
@@ -400,6 +438,23 @@ const viewBorrowRecords = async (row) => {
     ElMessage.error('获取借阅记录失败');
   } finally {
     loadingBookBorrowRecords.value = false;
+  }
+};
+
+const viewUserBorrows = async (row) => {
+  currentUserName.value = row.username;
+  currentUserId.value = row.id;
+  userBorrowDialogVisible.value = true;
+  loadingUserBorrowRecords.value = true;
+  
+  try {
+    const res = await apiService.getBorrowedBooks(row.id);
+    userBorrowRecords.value = res || [];
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('获取用户借阅记录失败');
+  } finally {
+    loadingUserBorrowRecords.value = false;
   }
 };
 
@@ -691,6 +746,7 @@ const userForm = reactive({
 });
 
 const userRules = {
+  id: [{ required: true, message: '请输入用户ID', trigger: 'blur' }],
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
@@ -775,12 +831,14 @@ const submitUser = async () => {
           ElMessage.success('更新成功');
         } else {
           await apiService.register({
+            id: userForm.id,
             username: userForm.username,
             password: userForm.password,
             email: userForm.email,
             phone: userForm.phone,
             sex: userForm.sex,
-            role: userForm.role
+            role: userForm.role,
+            registerTime: new Date().toISOString()
           });
           ElMessage.success('添加成功');
         }

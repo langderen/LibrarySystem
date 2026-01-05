@@ -11,8 +11,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User login(String username, String password) {
-        User user = baseMapper.selectByUsername(username);
-        if (user != null && user.getPassword().equals(password)) { // 实际项目需加密验证
+        User user = null;
+        if (username != null) {
+            user = baseMapper.selectByUsername(username);
+            if (user == null) {
+                try {
+                    Long id = Long.parseLong(username.trim());
+                    user = baseMapper.selectById(id);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        if (user != null && user.getPassword().equals(password)) {
             return user;
         }
         return null;

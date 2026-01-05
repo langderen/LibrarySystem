@@ -170,10 +170,12 @@ const handleRegister = async () => {
   try {
     // 2. 发送注册请求
     const data = await apiService.register({
+      id: form.value.id,
       username: form.value.username,
       email: form.value.email,
       phone: form.value.phone,
       password: form.value.password,
+      registerTime: new Date().toISOString()
     });
     // 3. 处理响应
     if (data.code === 200) {

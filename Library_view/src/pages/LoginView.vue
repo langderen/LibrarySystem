@@ -1,13 +1,13 @@
 <template>
   <div class="login-page">
     <el-card shadow="never" class="login-card">
-      <h2 class="login-title">系统登录</h2>
+      <h2 class="login-title">登录</h2>
       <!-- 移除 label-width，避免影响按钮布局；增加 class 统一控制表单 -->
       <el-form :model="loginForm" :rules="loginRules" ref="loginFormRef" class="login-form">
         <el-form-item prop="username" class="form-item">
           <!-- 手动添加必填星标，避免 Element 表单 label 布局干扰 -->
-          <label class="form-label">用户名</label>
-          <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" />
+          <label class="form-label">用户名/ID</label>
+          <el-input v-model="loginForm.username" placeholder="请输入用户名或ID" size="large" />
         </el-form-item>
         <el-form-item prop="password" class="form-item">
           <label class="form-label">密码</label>
@@ -41,7 +41,7 @@ const loginForm = reactive({
   password: '',
 });
 const loginRules = reactive({
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名或ID', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 });
 const handleLogin = async () => {
@@ -56,6 +56,8 @@ const handleLogin = async () => {
     router.push('/');
   } catch (error) {
     console.error('登录失败:', error);
+    const errorMsg = error.response?.data?.msg || '用户名或密码错误';
+    ElMessage.error(errorMsg);
   } finally {
     loading.value = false;
   }

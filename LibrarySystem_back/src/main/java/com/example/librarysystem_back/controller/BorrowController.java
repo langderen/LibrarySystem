@@ -42,4 +42,26 @@ public class BorrowController {
     public List<BorrowRecord> getUserBorrows(@RequestParam Long userId) {
         return borrowService.getUserBorrowRecords(userId);
     }
+
+    // 管理员查询所有借阅记录
+    @GetMapping("/admin/all")
+    public List<BorrowRecord> getAllBorrowRecords() {
+        return borrowService.getAllBorrowRecords();
+    }
+
+    // 管理员按图书ID查询借阅记录
+    @GetMapping("/admin/byBookId/{bookId}")
+    public List<BorrowRecord> getBorrowRecordsByBookId(@PathVariable Long bookId) {
+        return borrowService.getBorrowRecordsByBookId(bookId);
+    }
+
+    // 管理员催还图书
+    @PostMapping("/admin/remind")
+    public Map<String, Object> remindReturn(@RequestParam Long recordId) {
+        Map<String, Object> result = new HashMap<>();
+        boolean success = borrowService.remindReturn(recordId);
+        result.put("success", success);
+        result.put("msg", success ? "催还通知已发送" : "发送失败或记录不存在");
+        return result;
+    }
 }

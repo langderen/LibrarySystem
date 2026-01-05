@@ -67,6 +67,26 @@ const apiService = {
     return api.get(`/users/profile`);
   },
 
+  // --- 管理员用户管理接口 ---
+  getAllUsers(page: any, size: any, params?: { username?: string; email?: string; role?: string }) {
+    let url = `/users/admin/all?page=${page}&size=${size}`;
+    if (params) {
+      if (params.username) url += `&username=${encodeURIComponent(params.username)}`;
+      if (params.email) url += `&email=${encodeURIComponent(params.email)}`;
+      if (params.role) url += `&role=${encodeURIComponent(params.role)}`;
+    }
+    return api.get(url);
+  },
+  getUserById(userId: any) {
+    return api.get(`/users/admin/${userId}`);
+  },
+  updateUser(userData: any) {
+    return api.put('/users/admin/update', userData);
+  },
+  deleteUser(userId: any) {
+    return api.delete(`/users/admin/${userId}`);
+  },
+
   // --- 图书相关 ---
   getBooks(page:any,size:any, keyword?:string) {
     let url = `/books?page=${page}&size=${size}`;
@@ -74,6 +94,20 @@ const apiService = {
       url += `&keyword=${encodeURIComponent(keyword)}`;
     }
     return api.get(url);
+  },
+  searchBooks(page:any, size:any, params?: {title?:string, author?:string, isbn?:string, category?:string, publisher?:string}) {
+    let url = `/books/search?page=${page}&size=${size}`;
+    if (params) {
+      if (params.title) url += `&title=${encodeURIComponent(params.title)}`;
+      if (params.author) url += `&author=${encodeURIComponent(params.author)}`;
+      if (params.isbn) url += `&isbn=${encodeURIComponent(params.isbn)}`;
+      if (params.category) url += `&category=${encodeURIComponent(params.category)}`;
+      if (params.publisher) url += `&publisher=${encodeURIComponent(params.publisher)}`;
+    }
+    return api.get(url);
+  },
+  getBookById(bookId: any) {
+    return api.get(`/books/${bookId}`);
   },
   borrowBook(userId: any, bookId: any) {
     return api.post(`/borrows?userId=${userId}&bookId=${bookId} `);
@@ -83,6 +117,15 @@ const apiService = {
   },
   getBorrowedBooks(userId: any) {
     return api.get(`/borrows/getBrrowByUserId?userId=${userId}`);
+  },
+  getAllBorrowRecords() {
+    return api.get(`/borrows/admin/all`);
+  },
+  getBorrowRecordsByBookId(bookId: any) {
+    return api.get(`/borrows/admin/byBookId/${bookId}`);
+  },
+  remindReturn(recordId: any) {
+    return api.post(`/borrows/admin/remind?recordId=${recordId}`);
   },
 
 

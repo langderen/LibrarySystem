@@ -5,15 +5,19 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 @TableName("books")
 public class Book {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String title; // 书名
-    private String author; // 作者
-    private String isbn; // ISBN编号
-    private String publisher; // 出版社
-    private Integer totalStock; // 总库存
-    private Integer availableStock; // 可借库存
+    private String title;
+    private String author;
+    private String isbn;
+    private String publisher;
+    private LocalDate publishDate;
+    private String category;
+    private Integer totalStock;
+    private Integer availableStock;
 }

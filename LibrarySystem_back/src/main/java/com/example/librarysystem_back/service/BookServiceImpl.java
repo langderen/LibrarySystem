@@ -1,5 +1,7 @@
 package com.example.librarysystem_back.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.librarysystem_back.entity.Book;
 import com.example.librarysystem_back.mapper.BookMapper;
@@ -11,7 +13,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
 
     @Override
     public boolean addBook(Book book) {
-        book.setAvailableStock(book.getTotalStock()); // 初始可借库存=总库存
+        book.setAvailableStock(book.getTotalStock());
         return save(book);
     }
 
@@ -23,5 +25,11 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Override
     public boolean deleteBook(Long id) {
         return removeById(id);
+    }
+
+    @Override
+    public IPage<Book> searchBooks(int page, int size, String title, String author, String isbn, String category, String publisher) {
+        Page<Book> pageObj = new Page<>(page, size);
+        return baseMapper.searchBooks(pageObj, title, author, isbn, category, publisher);
     }
 }

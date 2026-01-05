@@ -14,12 +14,18 @@ CREATE TABLE users (
 -- 图书表（补充完整）
 CREATE TABLE books (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    author VARCHAR(100) NOT NULL,
-    isbn VARCHAR(20) UNIQUE,
-    publisher VARCHAR(100),
-    total_stock INT NOT NULL,
-    available_stock INT NOT NULL
+    title VARCHAR(200) NOT NULL COMMENT '书名',
+    author VARCHAR(100) NOT NULL COMMENT '作者',
+    isbn VARCHAR(20) UNIQUE COMMENT 'ISBN编号',
+    publisher VARCHAR(100) COMMENT '出版社',
+    publish_date DATE COMMENT '出版日期',
+    category VARCHAR(50) COMMENT '图书分类',
+    total_stock INT NOT NULL COMMENT '总库存',
+    available_stock INT NOT NULL COMMENT '可借库存',
+    INDEX idx_title (title),
+    INDEX idx_author (author),
+    INDEX idx_isbn (isbn),
+    INDEX idx_category (category)
 );
 
 -- 借阅记录表

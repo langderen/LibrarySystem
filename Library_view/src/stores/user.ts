@@ -10,6 +10,7 @@ export interface UserState {
   userPhone: string
   token: string
   role: string 
+  sex: string
 }
 
 // 2. 使用对象式 state（而非函数），并显式标注类型
@@ -26,7 +27,8 @@ export const useUserStore = defineStore('user', {
     isFinited: false,
     token: '',
     userPhone: '',
-    role: ''
+    role: '',
+    sex: ''
   }),
 
   getters: {
@@ -51,6 +53,7 @@ export const useUserStore = defineStore('user', {
       this.token = data.token || this.token
       this.role = data.role || this.role
       this.userPhone = data.userPhone || this.userPhone
+      this.sex = data.sex || this.sex
       this.isFinited = true
     },
     clearUser() {

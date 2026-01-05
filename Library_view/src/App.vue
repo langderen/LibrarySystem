@@ -40,42 +40,37 @@
 <script setup>
 import { computed , onMounted} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useUserStore } from './stores/user'; // 建议 store 导出改为 useUserStore 命名规范
+import { useUserStore } from './stores/user';
 import { ElMessage } from 'element-plus';
 import apiService from './service/api';
 const route = useRoute();
 const router = useRouter();
-const userStore = useUserStore(); // 确保 store 名字匹配
+const userStore = useUserStore();
 const currentRoute = computed(() => route);
 
 const handleLogout = () => {
-  userStore.clearUser(); // 使用 Pinia action 清理状态
-  localStorage.removeItem('token'); // 确保 token 被移除
+  userStore.clearUser();
+  localStorage.removeItem('token');
   ElMessage.success('已成功退出登录');
   router.push('/login');
 };
 onMounted(async () => {
   if (localStorage.getItem('token')) {
     try {
-      // 调用后端接口获取最新用户信息
       const userInfo = await apiService.getProfile();
-      console.log('自动刷新用户信息:', userInfo);
-      userStore.setUser(userInfo.data.profile); 
+      userStore.setUser(userInfo.data.profile);
     } catch (error) {
       console.error('自动刷新用户信息失败:', error);
-      // 如果是 Token 过期 (401)，api.ts 中的拦截器通常会自动处理跳转登录
-      // 所以这里不需要写太多逻辑
     }
   }
 });
 </script>
 
 <style scoped>
-/* 样式简化，使用 Flex 布局处理对齐 */
 #app-container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 96vh;
 }
 .app-header {
   display: flex;
@@ -83,6 +78,7 @@ onMounted(async () => {
   justify-content: space-between;
   border-bottom: 1px solid #ebeef5;
   padding: 0 25px;
+  flex-shrink: 0;
 }
 .logo {
   font-size: 20px;
@@ -105,10 +101,12 @@ onMounted(async () => {
 }
 .el-main {
   background-color: #f5f7fa;
+  flex: 1;
 }
 .app-footer {
   text-align: center;
   line-height: 60px;
   color: #909399;
+  background-color: #fff;
 }
 </style>

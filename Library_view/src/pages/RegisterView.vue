@@ -6,6 +6,19 @@
       
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="form-item">
+          <label for="id">ID</label>
+          <input
+            type="text"
+            id="id"
+            v-model="form.id"
+            placeholder="请输入学号"
+            :class="{ 'input-error': errors.id }"
+            required
+          />
+          <span class="error-msg">{{ errors.id }}</span>
+        </div>
+
+        <div class="form-item">
           <label for="username">用户名</label>
           <input
             type="text"
@@ -98,6 +111,7 @@ const router = useRouter();
 
 // 表单数据
 const form = ref({
+  id: '',
   username: '',
   email: '',
   phone: '',

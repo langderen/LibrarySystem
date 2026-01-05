@@ -58,4 +58,24 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowRecordMapper, BorrowRec
 
         return baseMapper.selectByUserId(userId);
     }
+
+    @Override
+    public List<BorrowRecord> getAllBorrowRecords() {
+        return baseMapper.selectAllBorrowRecords();
+    }
+
+    @Override
+    public List<BorrowRecord> getBorrowRecordsByBookId(Long bookId) {
+        return baseMapper.selectByBookId(bookId);
+    }
+
+    @Override
+    public boolean remindReturn(Long recordId) {
+        BorrowRecord record = getById(recordId);
+        if (record == null || record.getStatus() == 1) {
+            return false;
+        }
+        System.out.println("催还通知：用户 " + record.getUserId() + " 借阅的图书 " + record.getBookId() + " 请及时归还");
+        return true;
+    }
 }

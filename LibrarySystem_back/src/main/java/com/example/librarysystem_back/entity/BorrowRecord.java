@@ -24,4 +24,6 @@ public class BorrowRecord {
     private String bookAuthor;
     @TableField(exist = false)
     private String isbn;
+    @TableField(exist = false)
+    private String userName;
 }

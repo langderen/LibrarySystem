@@ -9,6 +9,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
+import java.util.List;
+
 @Mapper
 public interface BookMapper extends BaseMapper<Book> {
     @Select("<script>" +
@@ -34,4 +36,10 @@ public interface BookMapper extends BaseMapper<Book> {
 
     @Update("UPDATE books SET available_stock = available_stock + 1 WHERE id = #{id}")
     int increaseStock(Long id);
+
+    @Select("SELECT * FROM books WHERE category = #{category} ORDER BY id DESC")
+    List<Book> selectByCategory(@Param("category") String category);
+
+    @Select("SELECT * FROM books ORDER BY id DESC")
+    List<Book> selectAll();
 }

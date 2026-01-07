@@ -4,6 +4,7 @@
       <h2>图书借阅列表</h2>
       <div class="header-actions">
         <el-button type="primary" @click="fetchBooks">刷新列表</el-button>
+        <el-button type="success" @click="aiRecommendDialogVisible = true">AI推荐</el-button>
       </div>
     </div>
 
@@ -91,12 +92,49 @@
         <el-button type="primary" @click="confirmBorrow">确认借阅</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="aiRecommendDialogVisible" title="AI图书推荐" width="700px">
+      <div class="ai-recommend-container">
+        <div class="ai-messages" ref="aiMessagesRef">
+          <div v-for="(msg, index) in aiMessages" :key="index" 
+               :class="['message', msg.role === 'user' ? 'user-message' : 'ai-message']">
+            <div class="message-content">
+              <el-tag v-if="msg.role === 'user'" type="primary" size="small">你</el-tag>
+              <el-tag v-else type="success" size="small">AI</el-tag>
+              <div class="message-text" v-html="msg.content"></div>
+            </div>
+          </div>
+          <div v-if="aiLoading" class="message ai-message">
+            <div class="message-content">
+              <el-tag type="success" size="small">AI</el-tag>
+              <div class="message-text"><el-icon class="is-loading"><Loading /></el-icon> 正在思考...</div>
+            </div>
+          </div>
+        </div>
+        <div class="ai-input-area">
+          <el-input
+            v-model="aiQuestion"
+            placeholder="描述你想要什么类型的书，例如：'我想看一些关于人工智能的书'"
+            @keyup.enter="sendAiQuestion"
+            :disabled="aiLoading"
+            size="large"
+          >
+            <template #append>
+              <el-button type="primary" @click="sendAiQuestion" :loading="aiLoading">
+                <el-icon><Promotion /></el-icon> 提问
+              </el-button>
+            </template>
+          </el-input>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
+import { Loading, Promotion } from '@element-plus/icons-vue';
 import apiService from '../service/api';
 import { useUserStore } from '@/stores/user';
 
@@ -108,6 +146,15 @@ const pageSize = ref(10);
 const total = ref(0);
 const borrowDialogVisible = ref(false);
 const selectedBook = ref(null);
+
+// AI推荐相关
+const aiRecommendDialogVisible = ref(false);
+const aiMessages = ref([
+  { role: 'ai', content: '你好！我是图书推荐助手。请告诉我你想看什么类型的书，我会为你推荐合适的图书。' }
+]);
+const aiQuestion = ref('');
+const aiLoading = ref(false);
+const aiMessagesRef = ref(null);
 
 const searchForm = reactive({
   title: '',
@@ -170,6 +217,51 @@ const confirmBorrow = async () => {
   }
 };
 
+const sendAiQuestion = async () => {
+  if (!aiQuestion.value.trim() || aiLoading.value) return;
+
+  const userQuestion = aiQuestion.value.trim();
+  aiQuestion.value = '';
+
+  aiMessages.value.push({ role: 'user', content: userQuestion });
+  aiLoading.value = true;
+
+  await nextTick();
+  scrollToBottom();
+
+  try {
+    const res = await apiService.aiRecommend(userQuestion);
+    const recommendedBooks = res.recommendedBooks || [];
+    const explanation = res.explanation || '';
+
+    let content = explanation;
+    if (recommendedBooks.length > 0) {
+      content += '<div class="recommended-books"><h4>📚 推荐图书：</h4><ul>';
+      recommendedBooks.forEach(book => {
+        content += `<li><strong>《${book.title}》</strong> - ${book.author} (${book.publisher}) - 分类：${book.category}</li>`;
+      });
+      content += '</ul></div>';
+    } else {
+      content += '<p>没有找到符合您要求的图书。</p>';
+    }
+
+    aiMessages.value.push({ role: 'ai', content });
+  } catch (error) {
+    console.error('AI推荐失败', error);
+    aiMessages.value.push({ role: 'ai', content: '抱歉，推荐失败了。请换个问题试试。' });
+  } finally {
+    aiLoading.value = false;
+    await nextTick();
+    scrollToBottom();
+  }
+};
+
+const scrollToBottom = () => {
+  if (aiMessagesRef.value) {
+    aiMessagesRef.value.scrollTop = aiMessagesRef.value.scrollHeight;
+  }
+};
+
 onMounted(fetchBooks);
 </script>
 
@@ -205,5 +297,77 @@ onMounted(fetchBooks);
 
 .borrow-info strong {
   color: #606266;
+}
+
+.ai-recommend-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.message {
+  margin-bottom: 16px;
+  display: flex;
+}
+
+.user-message {
+  justify-content: flex-end;
+}
+
+.ai-message {
+  justify-content: flex-start;
+}
+
+.message-content {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.user-message .message-content {
+  background-color: #409eff;
+  color: #fff;
+}
+
+.ai-message .message-content {
+  background-color: #fff;
+  border: 1px solid #e4e7ed;
+}
+
+.message-text {
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.ai-input-area {
+  display: flex;
+  gap: 8px;
+}
+
+.recommended-books {
+  margin-top: 12px;
+}
+
+.recommended-books h4 {
+  margin: 8px 0;
+  color: #67c23a;
+}
+
+.recommended-books ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.recommended-books li {
+  margin: 6px 0;
 }
 </style>

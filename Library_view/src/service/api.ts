@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus';
 const api = axios.create({
   // ！！！请将此处的 URL 替换为你的后端服务地址
   baseURL: 'http://localhost:8080/api', 
-  timeout: 5000, // 请求超时时间
+  timeout: 10000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
   }
@@ -138,6 +138,11 @@ const apiService = {
   },
   deleteBook(bookId: any) {
     return api.delete(`/books/${bookId}`);
+  },
+
+  // --- AI 推荐接口 ---
+  aiRecommend(question: string) {
+    return api.post('/ai/recommend', { question });
   }
 };
 

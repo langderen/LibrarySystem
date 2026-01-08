@@ -1,11 +1,10 @@
 package com.example.librarysystem_back.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.librarysystem_back.config.BorrowRulesConfig;
 import com.example.librarysystem_back.entity.BorrowRecord;
 import com.example.librarysystem_back.mapper.BookMapper;
 import com.example.librarysystem_back.mapper.BorrowRecordMapper;
-import com.example.librarysystem_back.service.BorrowService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,26 +15,48 @@ import java.util.List;
 public class BorrowServiceImpl extends ServiceImpl<BorrowRecordMapper, BorrowRecord> implements BorrowService {
 
     private final BookMapper bookMapper;
+    private final BorrowRulesConfig borrowRulesConfig;
 
-    public BorrowServiceImpl(BookMapper bookMapper) {
+    public BorrowServiceImpl(BookMapper bookMapper, BorrowRulesConfig borrowRulesConfig) {
         this.bookMapper = bookMapper;
+        this.borrowRulesConfig = borrowRulesConfig;
     }
 
     @Transactional // 事务保证库存和记录一致性
     @Override
     public boolean borrowBook(Long userId, Long bookId) {
-        // 1. 减少图书库存
+        BorrowResult result = borrowBookWithResult(userId, bookId);
+        return result.isSuccess();
+    }
+
+    @Transactional // 事务保证库存和记录一致性
+    @Override
+    public BorrowResult borrowBookWithResult(Long userId, Long bookId) {
+        int maxBorrowCount = borrowRulesConfig.getMaxBorrowCount();
+
+        int currentBorrowCount = baseMapper.countUnreturnedByUserId(userId);
+        if (currentBorrowCount >= maxBorrowCount) {
+            return BorrowResult.failure("您已达到最大借阅数量限制（" + maxBorrowCount + "本），请先归还部分图书后再借阅");
+        }
+
         int rows = bookMapper.decreaseStock(bookId);
         if (rows <= 0) {
-            return false; // 库存不足
+            return BorrowResult.failure("库存不足或图书不存在");
         }
-        // 2. 创建借阅记录
+
         BorrowRecord record = new BorrowRecord();
         record.setUserId(userId);
         record.setBookId(bookId);
         record.setBorrowTime(LocalDateTime.now());
-        record.setStatus(0); // 未归还
-        return save(record);
+        record.setStatus(0);
+
+        boolean saved = save(record);
+        if (saved) {
+            return BorrowResult.success("借阅成功",record);
+        } else {
+            bookMapper.increaseStock(bookId);
+            return BorrowResult.failure("借阅失败，请重试");
+        }
     }
 
     @Transactional
@@ -55,18 +76,45 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowRecordMapper, BorrowRec
 
     @Override
     public List<BorrowRecord> getUserBorrowRecords(Long userId) {
-
-        return baseMapper.selectByUserId(userId);
+        List<BorrowRecord> records = baseMapper.selectByUserId(userId);
+        calculateOverdue(records);
+        return records;
     }
 
     @Override
     public List<BorrowRecord> getAllBorrowRecords() {
-        return baseMapper.selectAllBorrowRecords();
+        List<BorrowRecord> records = baseMapper.selectAllBorrowRecords();
+        calculateOverdue(records);
+        return records;
     }
 
     @Override
     public List<BorrowRecord> getBorrowRecordsByBookId(Long bookId) {
-        return baseMapper.selectByBookId(bookId);
+        List<BorrowRecord> records = baseMapper.selectByBookId(bookId);
+        calculateOverdue(records);
+        return records;
+    }
+
+    private void calculateOverdue(List<BorrowRecord> records) {
+        int borrowDays = borrowRulesConfig.getBorrowDays();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (BorrowRecord record : records) {
+            if (record.getStatus() == 0 && record.getBorrowTime() != null) {
+                LocalDateTime dueDate = record.getBorrowTime().plusDays(borrowDays);
+                if (now.isAfter(dueDate)) {
+                    record.setOverdue(true);
+                    long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(dueDate, now);
+                    record.setOverdueDays((int) daysBetween);
+                } else {
+                    record.setOverdue(false);
+                    record.setOverdueDays(0);
+                }
+            } else {
+                record.setOverdue(false);
+                record.setOverdueDays(0);
+            }
+        }
     }
 
     @Override
@@ -77,5 +125,14 @@ public class BorrowServiceImpl extends ServiceImpl<BorrowRecordMapper, BorrowRec
         }
         System.out.println("催还通知：用户 " + record.getUserId() + " 借阅的图书 " + record.getBookId() + " 请及时归还");
         return true;
+    }
+
+    @Override
+    public List<BorrowRecord> getOverdueRecords(Long userId) {
+        List<BorrowRecord> records = baseMapper.selectByUserId(userId);
+        calculateOverdue(records);
+        return records.stream()
+                .filter(record -> record.getOverdue() != null && record.getOverdue())
+                .toList();
     }
 }

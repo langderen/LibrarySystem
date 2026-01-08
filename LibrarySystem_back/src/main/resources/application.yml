@@ -16,6 +16,12 @@ ollama:
   host: http://localhost:11434
   model: qwen3:8b
 
+# 借阅规则配置
+borrow:
+  rules:
+    max-borrow-count: 5  # 每人最多借阅数量
+    borrow-days: 30      # 借阅天数
+
 ############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
 sa-token:
   # token 名称（同时也是 cookie 名称）

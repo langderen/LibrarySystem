@@ -16,6 +16,19 @@
             <el-table-column prop="bookAuthor" label="作者" min-width="100" />
             <el-table-column prop="borrowTime" label="借阅日期" width="180" />
             <el-table-column prop="returnTime" label="归还日期" width="180" />
+            <el-table-column label="状态" width="100" align="center">
+              <template #default="scope">
+                <el-tag v-if="scope.row.overdue" type="danger" size="small">
+                  超期 {{ scope.row.overdueDays }} 天
+                </el-tag>
+                <el-tag v-else-if="scope.row.status === 0" type="warning" size="small">
+                  未归还
+                </el-tag>
+                <el-tag v-else type="success" size="small">
+                  已归还
+                </el-tag>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="100" fixed="right">
               <template #default="scope">
                 <el-button v-if="scope.row.status === 0" type="primary" size="small" @click="returnBook(scope.row)">归还</el-button>
@@ -533,6 +546,12 @@ const fetchBorrowedBooks = async () => {
   try {
     const res = await apiService.getBorrowedBooks(userStore.userId);
     borrowedBooks.value = res || [];
+    borrowedBooks.value.sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status - b.status;
+      }
+      return new Date(b.borrowTime) - new Date(a.borrowTime);
+    });
   } catch (error) {
     console.error(error);
   } finally {

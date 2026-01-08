@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "ollama")
-public class OllamaConfig {
-    private String host = "http://127.0.0.1:11434";
-    private String model = "qwen3:8b";
+@ConfigurationProperties(prefix = "borrow.rules")
+public class BorrowRulesConfig {
+    private int maxBorrowCount = 5;
+    private int borrowDays = 30;
 }

@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus';
 const api = axios.create({
   // ！！！请将此处的 URL 替换为你的后端服务地址
   baseURL: 'http://localhost:8080/api', 
-  timeout: 10000, // 请求超时时间
+  timeout: 15000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
   }
@@ -117,6 +117,9 @@ const apiService = {
   },
   getBorrowedBooks(userId: any) {
     return api.get(`/borrows/getBrrowByUserId?userId=${userId}`);
+  },
+  checkOverdueBooks(userId: any) {
+    return api.get(`/borrows/overdue?userId=${userId}`);
   },
   getAllBorrowRecords() {
     return api.get(`/borrows/admin/all`);

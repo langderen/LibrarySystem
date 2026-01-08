@@ -52,6 +52,23 @@ const handleLogin = async () => {
     localStorage.setItem('token', response.data.tokenValue);
     const userInfo = await apiService.getProfile();
     userStore.setUser(userInfo.data.profile);
+    
+    const overdueRes = await apiService.checkOverdueBooks(userStore.userId);
+    if (overdueRes.hasOverdue) {
+      const overdueCount = overdueRes.count;
+      const overdueRecords = overdueRes.overdueRecords || [];
+      let message = `您有 ${overdueCount} 本图书已超期未归还，请尽快归还！\n`;
+      overdueRecords.forEach((record, index) => {
+        const days = record.overdueDays || 0;
+        message += `\n${index + 1}. 《${record.bookTitle}》已超期 ${days} 天`;
+      });
+      ElMessage.warning({
+        message: message,
+        duration: 8000,
+        showClose: true
+      });
+    }
+    
     ElMessage.success('登录成功');
     router.push('/');
   } catch (error) {

@@ -17,7 +17,7 @@ public class BorrowRecord {
     private LocalDateTime borrowTime; // 借阅时间
     private LocalDateTime returnTime; // 归还时间（null表示未归还）
     private Integer status; // 状态：0-未归还，1-已归还
-    @TableField(exist = false) // 👈 关键！告诉 MyBatis-Plus 这不是数据库表里的列，不要在 insert/update 时报错
+    @TableField(exist = false)
     private String bookTitle;
 
     @TableField(exist = false)
@@ -26,4 +26,8 @@ public class BorrowRecord {
     private String isbn;
     @TableField(exist = false)
     private String userName;
+    @TableField(exist = false)
+    private Boolean overdue; // 是否超期
+    @TableField(exist = false)
+    private Integer overdueDays; // 超期天数
 }

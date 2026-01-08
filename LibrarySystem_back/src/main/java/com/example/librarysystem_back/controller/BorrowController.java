@@ -1,6 +1,7 @@
 package com.example.librarysystem_back.controller;
 
 import com.example.librarysystem_back.entity.BorrowRecord;
+import com.example.librarysystem_back.service.BorrowResult;
 import com.example.librarysystem_back.service.BorrowService;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,14 @@ public class BorrowController {
     @PostMapping
     public Map<String, Object> borrowBook(@RequestParam Long userId, @RequestParam Long bookId) {
         Map<String, Object> result = new HashMap<>();
-        boolean success = borrowService.borrowBook(userId, bookId);
-        result.put("success", success);
-        result.put("msg", success ? "借阅成功" : "库存不足或图书不存在");
+        BorrowResult borrowResult = borrowService.borrowBookWithResult(userId, bookId);
+        result.put("success", borrowResult.isSuccess());
+        result.put("msg", borrowResult.getMessage());
+        if (borrowResult.isSuccess()) {
+            result.put("record", borrowResult.getRecord());
+        } else {
+            result.put("record", null);
+        }
         return result;
     }
 
@@ -62,6 +68,17 @@ public class BorrowController {
         boolean success = borrowService.remindReturn(recordId);
         result.put("success", success);
         result.put("msg", success ? "催还通知已发送" : "发送失败或记录不存在");
+        return result;
+    }
+
+    // 检查用户超期书籍
+    @GetMapping("/overdue")
+    public Map<String, Object> getOverdueRecords(@RequestParam Long userId) {
+        Map<String, Object> result = new HashMap<>();
+        List<BorrowRecord> overdueRecords = borrowService.getOverdueRecords(userId);
+        result.put("hasOverdue", !overdueRecords.isEmpty());
+        result.put("overdueRecords", overdueRecords);
+        result.put("count", overdueRecords.size());
         return result;
     }
 }

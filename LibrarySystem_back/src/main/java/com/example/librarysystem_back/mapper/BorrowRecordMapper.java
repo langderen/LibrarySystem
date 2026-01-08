@@ -17,6 +17,10 @@ public interface BorrowRecordMapper extends BaseMapper<BorrowRecord> {
             "WHERE br.user_id = #{userId}")
     List<BorrowRecord> selectByUserId(Long userId);
 
+    // 查询用户当前未归还的借阅数量
+    @Select("SELECT COUNT(*) FROM borrow_records WHERE user_id = #{userId} AND status = 0")
+    int countUnreturnedByUserId(Long userId);
+
     // 更新归还时间和状态
     @Update("UPDATE borrow_records SET return_time = #{returnTime}, status = 1 WHERE id = #{id}")
     int updateReturnInfo(BorrowRecord record);

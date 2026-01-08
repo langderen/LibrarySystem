@@ -71,12 +71,12 @@
     <el-pagination
       v-model:current-page="currentPage"
       v-model:page-size="pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :page-sizes="[10, 20, 50]"
       :total="total"
       layout="total, sizes, prev, pager, next, jumper"
       @size-change="fetchBooks"
       @current-change="fetchBooks"
-      style="margin-top: 20px; justify-content: flex-end;"
+      class="pagination-wrapper"
     />
 
     <el-dialog v-model="borrowDialogVisible" title="确认借阅" width="400px">
@@ -208,12 +208,35 @@ const confirmBorrow = async () => {
   if (!selectedBook.value) return;
 
   try {
-    await apiService.borrowBook(userStore.userId, selectedBook.value.id);
-    ElMessage.success(`成功借阅《${selectedBook.value.title}》`);
-    borrowDialogVisible.value = false;
-    await fetchBooks();
+    const overdueRes = await apiService.checkOverdueBooks(userStore.userId);
+    if (overdueRes.hasOverdue) {
+      const overdueCount = overdueRes.count;
+      const overdueRecords = overdueRes.overdueRecords || [];
+      let message = `您有 ${overdueCount} 本图书已超期未归还，请先归还超期书籍后再借阅新书！\n`;
+      overdueRecords.forEach((record, index) => {
+        const days = record.overdueDays || 0;
+        message += `\n${index + 1}. 《${record.bookTitle}》已超期 ${days} 天`;
+      });
+      ElMessage.error({
+        message: message,
+        duration: 8000,
+        showClose: true
+      });
+      borrowDialogVisible.value = false;
+      return;
+    }
+
+    const res = await apiService.borrowBook(userStore.userId, selectedBook.value.id);
+    if (res.success) {
+      ElMessage.success(`成功借阅《${selectedBook.value.title}》`);
+      borrowDialogVisible.value = false;
+      await fetchBooks();
+    } else {
+      ElMessage.error(res.msg || '借阅失败');
+    }
   } catch (error) {
     console.error('Borrow failed', error);
+    ElMessage.error('借阅失败，请重试');
   }
 };
 
@@ -288,6 +311,12 @@ onMounted(fetchBooks);
 
 .search-form {
   margin-bottom: 0;
+}
+
+.pagination-wrapper {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .borrow-info p {

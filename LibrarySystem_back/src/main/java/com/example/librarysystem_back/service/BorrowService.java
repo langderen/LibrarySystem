@@ -9,6 +9,9 @@ public interface BorrowService extends IService<BorrowRecord> {
     // 借阅图书
     boolean borrowBook(Long userId, Long bookId);
 
+    // 借阅图书（带详细结果）
+    BorrowResult borrowBookWithResult(Long userId, Long bookId);
+
     // 归还图书
     boolean returnBook(Long recordId);
 
@@ -23,4 +26,7 @@ public interface BorrowService extends IService<BorrowRecord> {
 
     // 管理员催还图书
     boolean remindReturn(Long recordId);
+
+    // 检查用户是否有超期书籍
+    List<BorrowRecord> getOverdueRecords(Long userId);
 }
